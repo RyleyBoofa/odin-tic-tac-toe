@@ -1,2 +1,3 @@
-# Web Project
-New web project
+# Odin Tic Tac Toe
+
+Browser-based Tic Tac Toe game
