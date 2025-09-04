@@ -28,13 +28,17 @@ const gameBoard = (() => {
     const _checkCols = () => {
         for (let col = 0; col < 3; col++) {
             const value = _board[0][col];
-            let match = true;
-            for (let row of _board) {
-                if (row[col] !== value) {
-                    match = false;
+            if (value === null) {
+                return null;
+            } else {
+                let match = true;
+                for (let row of _board) {
+                    if (row[col] !== value) {
+                        match = false;
+                    }
                 }
+                if (match) return value;
             }
-            if (match) return value;
         }
         return null;
     };
@@ -42,23 +46,31 @@ const gameBoard = (() => {
     const _checkDiags = () => {
         // top-left to bottom-right
         const topLeft = _board[0][0];
-        let match = true;
-        for (let i = 0; i <= 2; i++) {
-            if (_board[i][i] !== topLeft) {
-                match = false;
+        if (topLeft === null) {
+            return null;
+        } else {
+            let match = true;
+            for (let i = 0; i <= 2; i++) {
+                if (_board[i][i] !== topLeft) {
+                    match = false;
+                }
             }
+            if (match) return topLeft;
         }
-        if (match) return topLeft;
 
         // bottom-left to top-right
         const bottomLeft = _board[2][0];
-        match = true;
-        for (let i = 0; i <= 2; i++) {
-            if (_board[2 - i][0 + i] !== bottomLeft) {
-                match = false;
+        if (bottomLeft === null) {
+            return null;
+        } else {
+            match = true;
+            for (let i = 0; i <= 2; i++) {
+                if (_board[2 - i][0 + i] !== bottomLeft) {
+                    match = false;
+                }
             }
+            if (match) return bottomLeft;
         }
-        if (match) return bottomLeft;
 
         return null;
     };
@@ -111,16 +123,21 @@ const game = (() => {
     const _players = [createPlayer("X"), createPlayer("O")];
     let _activePlayer = 0;
 
+    let _roundsPlayed = 0;
+    const MIN_ROUNDS_TO_WIN = 5;
+
     const _playRoundRecursive = () => {
         if (gameBoard.isBoardFull()) {
             console.log("It's a tie");
             return;
         }
 
-        const winner = gameBoard.checkForWinner();
-        if (winner !== null) {
-            console.log(`Winner: ${winner}`);
-            return;
+        if (_roundsPlayed >= MIN_ROUNDS_TO_WIN) {
+            const winner = gameBoard.checkForWinner();
+            if (winner !== null) {
+                console.log(`Winner: ${winner}`);
+                return;
+            }
         }
 
         const player = _players[_activePlayer];
@@ -132,6 +149,7 @@ const game = (() => {
 
         if (player.takeTurn(row, col)) {
             _activePlayer = 1 - _activePlayer; // toggle between 0-1
+            _roundsPlayed++;
         }
 
         _playRoundRecursive();
