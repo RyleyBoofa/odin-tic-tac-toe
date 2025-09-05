@@ -7,13 +7,13 @@ const gameBoard = (() => {
         [null, null, null],
     ];
 
-    const _logBoard = () => {
+    function _logBoard() {
         _board.forEach((row) => {
             console.log(row);
         });
-    };
+    }
 
-    const _checkRows = () => {
+    function _checkRows() {
         for (let row of _board) {
             const value = row[0];
             if (value === null) {
@@ -23,9 +23,9 @@ const gameBoard = (() => {
             }
         }
         return null;
-    };
+    }
 
-    const _checkCols = () => {
+    function _checkCols() {
         for (let col = 0; col < 3; col++) {
             const value = _board[0][col];
             if (value === null) {
@@ -41,9 +41,9 @@ const gameBoard = (() => {
             }
         }
         return null;
-    };
+    }
 
-    const _checkDiags = () => {
+    function _checkDiags() {
         // top-left to bottom-right
         const topLeft = _board[0][0];
         if (topLeft === null) {
@@ -73,9 +73,9 @@ const gameBoard = (() => {
         }
 
         return null;
-    };
+    }
 
-    const updateCell = (row, col, value) => {
+    function updateCell(row, col, value) {
         let success;
 
         if (_board[row][col] === null) {
@@ -87,31 +87,39 @@ const gameBoard = (() => {
         }
 
         _logBoard();
+        displayController.renderBoard();
 
         return success;
-    };
+    }
 
-    const isBoardFull = () => {
+    function isBoardFull() {
         return _board.every((row) => row.every((cell) => cell !== null));
-    };
+    }
 
-    const checkForWinner = () => {
+    function checkForWinner() {
         return _checkRows() || _checkCols() || _checkDiags() || null;
-    };
+    }
+
+    function getBoard() {
+        return _board;
+    }
 
     return {
         updateCell,
         isBoardFull,
         checkForWinner,
+        getBoard,
     };
 })();
 
 function createPlayer(marker) {
-    const getMarker = () => marker;
+    function getMarker() {
+        return marker;
+    }
 
-    const takeTurn = (row, col) => {
+    function takeTurn(row, col) {
         return gameBoard.updateCell(row, col, marker);
-    };
+    }
 
     return {
         getMarker,
@@ -126,7 +134,7 @@ const game = (() => {
     let _roundsPlayed = 0;
     const MIN_ROUNDS_TO_WIN = 5;
 
-    const _playRoundRecursive = () => {
+    function _playRoundRecursive() {
         if (gameBoard.isBoardFull()) {
             console.log("It's a tie");
             return;
@@ -153,14 +161,63 @@ const game = (() => {
         }
 
         _playRoundRecursive();
-    };
+    }
 
-    const play = () => {
+    function play() {
         _playRoundRecursive();
         console.log("Gameover");
-    };
+    }
+
+    function getActivePlayer() {
+        return _players[_activePlayer];
+    }
 
     return {
         play,
+        getActivePlayer,
+    };
+})();
+
+const displayController = (() => {
+    const board = gameBoard.getBoard();
+    const grid = document.querySelector(".gameboard-container");
+
+    grid.addEventListener("click", _handleClickEvent);
+
+    function _handleClickEvent(event) {
+        const target = event.target;
+        const cell = target.getAttribute("data-cell");
+        console.log(cell);
+    }
+
+    function _resetGrid() {
+        const children = grid.querySelectorAll("*");
+        children.forEach((child) => {
+            child.remove();
+        });
+        board.forEach((row, rowIndex) => {
+            row.forEach((cell, cellIndex) => {
+                const div = document.createElement("div");
+                div.classList.add("gameboard-cell");
+                div.setAttribute("data-cell", `${rowIndex}/${cellIndex}`);
+                grid.appendChild(div);
+            });
+        });
+    }
+    _resetGrid();
+
+    function renderBoard() {
+        board.forEach((row, rowIndex) => {
+            row.forEach((cell, cellIndex) => {
+                if (cell !== null) {
+                    const target = document.querySelector(`[data-cell="${rowIndex}/${cellIndex}"]`);
+                    target.textContent = cell;
+                }
+            });
+        });
+    }
+
+    return {
+        renderBoard,
     };
 })();

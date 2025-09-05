@@ -12,8 +12,27 @@ body {
     background-color: #ccc;
 }
 
-h1,
-p {
+h1 {
     text-align: center;
-    margin: 1em auto;
+    margin: 0.5em auto;
+}
+
+.gameboard-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    width: 600px;
+    height: 600px;
+    border: 1px solid black;
+    margin: 0 auto;
+}
+
+.gameboard-cell {
+    border: 1px solid black;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 75px;
 }
