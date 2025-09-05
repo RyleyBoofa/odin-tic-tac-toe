@@ -168,46 +168,62 @@ const game = (() => {
         console.log("Gameover");
     }
 
-    function getActivePlayer() {
-        return _players[_activePlayer];
+    function playRound(row, col) {
+        if (_players[_activePlayer].takeTurn(row, col)) {
+            _activePlayer = 1 - _activePlayer;
+            _roundsPlayed++;
+        }
+
+        if (gameBoard.isBoardFull()) {
+            console.log("It's a tie");
+            return;
+        }
+
+        if (_roundsPlayed >= MIN_ROUNDS_TO_WIN) {
+            const winner = gameBoard.checkForWinner();
+            if (winner !== null) {
+                console.log(`Winner: ${winner}`);
+                return;
+            }
+        }
     }
 
     return {
         play,
-        getActivePlayer,
+        playRound,
     };
 })();
 
 const displayController = (() => {
-    const board = gameBoard.getBoard();
-    const grid = document.querySelector(".gameboard-container");
+    const _board = gameBoard.getBoard();
+    const _grid = document.querySelector(".gameboard-container");
 
-    grid.addEventListener("click", _handleClickEvent);
+    _grid.addEventListener("click", _handleClickEvent);
 
     function _handleClickEvent(event) {
         const target = event.target;
-        const cell = target.getAttribute("data-cell");
-        console.log(cell);
+        const [row, col] = target.getAttribute("data-cell").split("/");
+        game.playRound(row, col);
     }
 
     function _resetGrid() {
-        const children = grid.querySelectorAll("*");
+        const children = _grid.querySelectorAll("*");
         children.forEach((child) => {
             child.remove();
         });
-        board.forEach((row, rowIndex) => {
+        _board.forEach((row, rowIndex) => {
             row.forEach((cell, cellIndex) => {
                 const div = document.createElement("div");
                 div.classList.add("gameboard-cell");
                 div.setAttribute("data-cell", `${rowIndex}/${cellIndex}`);
-                grid.appendChild(div);
+                _grid.appendChild(div);
             });
         });
     }
     _resetGrid();
 
     function renderBoard() {
-        board.forEach((row, rowIndex) => {
+        _board.forEach((row, rowIndex) => {
             row.forEach((cell, cellIndex) => {
                 if (cell !== null) {
                     const target = document.querySelector(`[data-cell="${rowIndex}/${cellIndex}"]`);
