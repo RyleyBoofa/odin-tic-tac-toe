@@ -8,7 +8,33 @@
         <script src="src/script.js" defer></script>
     </head>
     <body>
-        <h1>Odin Tic Tac Toe</h1>
-        <div class="gameboard-container"></div>
+        <header class="header container">
+            <div class="content">
+                <h1 class="page-heading">Odin Tic Tac Toe</h1>
+            </div>
+        </header>
+        <dialog class="form-dialog">
+            <div class="player-form">
+                <h2 class="form-heading">Player 1</h2>
+                <label for="p1-name">Name:</label>
+                <input type="text" name="p1-name" id="p1-name" />
+            </div>
+            <div class="player-form">
+                <h2 class="form-heading">Player 2</h2>
+                <label for="p2-name">Name:</label>
+                <input type="text" name="p2-name" id="p2-name" />
+            </div>
+            <div class="dialog-buttons">
+                <button value="cancel" formmethod="dialog">Cancel</button>
+                <button id="confirm-btn" value="confirm">Confirm</button>
+            </div>
+        </dialog>
+        <section class="main container">
+            <div class="content">
+                <div class="buttons-container">
+                    <button type="button" class="button" id="play-btn">PLAY</button>
+                </div>
+            </div>
+        </section>
     </body>
 </html>

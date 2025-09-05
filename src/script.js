@@ -104,15 +104,29 @@ const gameBoard = (() => {
         return _board;
     }
 
+    function resetBoard() {
+        _board.forEach((row) => {
+            row.forEach((_, cellIndex) => {
+                row[cellIndex] = null;
+            });
+        });
+        _logBoard();
+    }
+
     return {
         updateCell,
         isBoardFull,
         checkForWinner,
         getBoard,
+        resetBoard,
     };
 })();
 
-function createPlayer(marker) {
+function createPlayer(name, marker) {
+    function getName() {
+        return name;
+    }
+
     function getMarker() {
         return marker;
     }
@@ -122,55 +136,26 @@ function createPlayer(marker) {
     }
 
     return {
+        getName,
         getMarker,
         takeTurn,
     };
 }
 
 const game = (() => {
-    const _players = [createPlayer("X"), createPlayer("O")];
+    let _players;
     let _activePlayer = 0;
 
     let _roundsPlayed = 0;
     const MIN_ROUNDS_TO_WIN = 5;
 
-    function _playRoundRecursive() {
-        if (gameBoard.isBoardFull()) {
-            console.log("It's a tie");
-            return;
-        }
-
-        if (_roundsPlayed >= MIN_ROUNDS_TO_WIN) {
-            const winner = gameBoard.checkForWinner();
-            if (winner !== null) {
-                console.log(`Winner: ${winner}`);
-                return;
-            }
-        }
-
-        const player = _players[_activePlayer];
-        const playerMarker = player.getMarker();
-        console.log(`${playerMarker}'s turn`);
-
-        const row = prompt(`${playerMarker} Enter a row number [0-2]`, 0);
-        const col = prompt(`${playerMarker} Enter a column number [0-2]`, 0);
-
-        if (player.takeTurn(row, col)) {
-            _activePlayer = 1 - _activePlayer; // toggle between 0-1
-            _roundsPlayed++;
-        }
-
-        _playRoundRecursive();
-    }
-
-    function play() {
-        _playRoundRecursive();
-        console.log("Gameover");
+    function init(p1, p2) {
+        _players = [createPlayer(p1, "X"), createPlayer(p2, "O")];
     }
 
     function playRound(row, col) {
         if (_players[_activePlayer].takeTurn(row, col)) {
-            _activePlayer = 1 - _activePlayer;
+            _activePlayer = 1 - _activePlayer; // toggle between 0-1
             _roundsPlayed++;
         }
 
@@ -189,41 +174,84 @@ const game = (() => {
     }
 
     return {
-        play,
+        init,
         playRound,
     };
 })();
 
 const displayController = (() => {
-    const _board = gameBoard.getBoard();
-    const _grid = document.querySelector(".gameboard-container");
+    const _gameBoard = gameBoard.getBoard();
+    const _playBtn = document.querySelector("#play-btn");
+    const _confirmBtn = document.querySelector("#confirm-btn");
+    const _formDialog = document.querySelector(".form-dialog");
+    const _mainContent = document.querySelector(".main > .content");
+    const _buttonsContainer = document.querySelector(".buttons-container");
 
-    _grid.addEventListener("click", _handleClickEvent);
+    _playBtn.addEventListener("click", _showFormDialog);
+    _confirmBtn.addEventListener("click", _initGame);
 
-    function _handleClickEvent(event) {
+    function _showFormDialog() {
+        _formDialog.showModal();
+    }
+
+    function _initGame() {
+        const p1 = document.querySelector("#p1-name").value;
+        const p2 = document.querySelector("#p2-name").value;
+        game.init(p1, p2);
+
+        _buildGrid();
+        _buildResetButton();
+
+        _playBtn.remove();
+        _formDialog.close();
+    }
+
+    function _updateGridCell(event) {
         const target = event.target;
         const [row, col] = target.getAttribute("data-cell").split("/");
         game.playRound(row, col);
     }
 
-    function _resetGrid() {
-        const children = _grid.querySelectorAll("*");
-        children.forEach((child) => {
+    function _resetGame() {
+        gameBoard.resetBoard();
+        const grid = document.querySelector(".gameboard-container");
+        Array.from(grid.children).forEach((child) => {
             child.remove();
         });
-        _board.forEach((row, rowIndex) => {
-            row.forEach((cell, cellIndex) => {
+        _buildGridCells(grid);
+    }
+
+    function _buildGrid() {
+        const grid = document.createElement("div");
+        grid.classList.add("gameboard-container");
+        grid.addEventListener("click", _updateGridCell);
+        _mainContent.appendChild(grid);
+        _buildGridCells(grid);
+    }
+
+    function _buildGridCells(grid) {
+        _gameBoard.forEach((row, rowIndex) => {
+            row.forEach((_, cellIndex) => {
                 const div = document.createElement("div");
                 div.classList.add("gameboard-cell");
                 div.setAttribute("data-cell", `${rowIndex}/${cellIndex}`);
-                _grid.appendChild(div);
+                grid.appendChild(div);
             });
         });
     }
-    _resetGrid();
+
+    function _buildResetButton() {
+        const resetBtn = document.createElement("button");
+        resetBtn.setAttribute("type", "button");
+        resetBtn.classList.add("button");
+        resetBtn.id = "reset-btn";
+        resetBtn.textContent = "RESET";
+        resetBtn.addEventListener("click", _resetGame);
+        _buttonsContainer.appendChild(resetBtn);
+    }
 
     function renderBoard() {
-        _board.forEach((row, rowIndex) => {
+        _gameBoard.forEach((row, rowIndex) => {
             row.forEach((cell, cellIndex) => {
                 if (cell !== null) {
                     const target = document.querySelector(`[data-cell="${rowIndex}/${cellIndex}"]`);
