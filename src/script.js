@@ -87,7 +87,6 @@ const gameBoard = (() => {
         }
 
         _logBoard();
-        displayController.renderBoard();
 
         return success;
     }
@@ -122,26 +121,6 @@ const gameBoard = (() => {
     };
 })();
 
-function createPlayer(name, marker) {
-    function getName() {
-        return name;
-    }
-
-    function getMarker() {
-        return marker;
-    }
-
-    function takeTurn(row, col) {
-        return gameBoard.updateCell(row, col, marker);
-    }
-
-    return {
-        getName,
-        getMarker,
-        takeTurn,
-    };
-}
-
 const game = (() => {
     let _players;
     let _activePlayer = 0;
@@ -149,8 +128,28 @@ const game = (() => {
     let _roundsPlayed = 0;
     const MIN_ROUNDS_TO_WIN = 5;
 
+    function _createPlayer(name, marker) {
+        function getName() {
+            return name;
+        }
+
+        function getMarker() {
+            return marker;
+        }
+
+        function takeTurn(row, col) {
+            return gameBoard.updateCell(row, col, marker);
+        }
+
+        return {
+            getName,
+            getMarker,
+            takeTurn,
+        };
+    }
+
     function init(p1, p2) {
-        _players = [createPlayer(p1, "X"), createPlayer(p2, "O")];
+        _players = [_createPlayer(p1, "X"), _createPlayer(p2, "O")];
     }
 
     function playRound(row, col) {
@@ -168,6 +167,11 @@ const game = (() => {
             const winner = gameBoard.checkForWinner();
             if (winner !== null) {
                 console.log(`Winner: ${winner}`);
+                for (player of _players) {
+                    if (player.getMarker() === winner) {
+                        _activePlayer = _players.indexOf(player);
+                    }
+                }
                 return;
             }
         }
@@ -210,6 +214,7 @@ const displayController = (() => {
         const target = event.target;
         const [row, col] = target.getAttribute("data-cell").split("/");
         game.playRound(row, col);
+        _renderBoard();
     }
 
     function _resetGame() {
@@ -250,7 +255,7 @@ const displayController = (() => {
         _buttonsContainer.appendChild(resetBtn);
     }
 
-    function renderBoard() {
+    function _renderBoard() {
         _gameBoard.forEach((row, rowIndex) => {
             row.forEach((cell, cellIndex) => {
                 if (cell !== null) {
@@ -260,8 +265,4 @@ const displayController = (() => {
             });
         });
     }
-
-    return {
-        renderBoard,
-    };
 })();
