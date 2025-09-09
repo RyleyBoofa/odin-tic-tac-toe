@@ -7,6 +7,8 @@ const gameBoard = (() => {
         [null, null, null],
     ];
 
+    let _result = null;
+
     function _logBoard() {
         _board.forEach((row) => {
             console.log(row);
@@ -17,19 +19,23 @@ const gameBoard = (() => {
         for (let row of _board) {
             const value = row[0];
             if (value === null) {
-                return null;
+                return false;
             } else if (row.every((cell) => cell === value)) {
-                return value;
+                _result = {
+                    winner: value,
+                    cells: `row:${_board.indexOf(row)}`,
+                };
+                return true;
             }
         }
-        return null;
+        return false;
     }
 
     function _checkCols() {
         for (let col = 0; col < 3; col++) {
             const value = _board[0][col];
             if (value === null) {
-                return null;
+                return false;
             } else {
                 let match = true;
                 for (let row of _board) {
@@ -37,17 +43,23 @@ const gameBoard = (() => {
                         match = false;
                     }
                 }
-                if (match) return value;
+                if (match) {
+                    _result = {
+                        winner: value,
+                        cells: `col:${col}`,
+                    };
+                    return true;
+                }
             }
         }
-        return null;
+        return false;
     }
 
     function _checkDiags() {
         // top-left to bottom-right
         const topLeft = _board[0][0];
         if (topLeft === null) {
-            return null;
+            return false;
         } else {
             let match = true;
             for (let i = 0; i <= 2; i++) {
@@ -55,13 +67,19 @@ const gameBoard = (() => {
                     match = false;
                 }
             }
-            if (match) return topLeft;
+            if (match) {
+                _result = {
+                    winner: topLeft,
+                    cells: "diag:TL",
+                };
+                return true;
+            }
         }
 
         // bottom-left to top-right
         const bottomLeft = _board[2][0];
         if (bottomLeft === null) {
-            return null;
+            return false;
         } else {
             match = true;
             for (let i = 0; i <= 2; i++) {
@@ -69,10 +87,16 @@ const gameBoard = (() => {
                     match = false;
                 }
             }
-            if (match) return bottomLeft;
+            if (match) {
+                _result = {
+                    winner: bottomLeft,
+                    cells: "diag:BL",
+                };
+                return true;
+            }
         }
 
-        return null;
+        return false;
     }
 
     function updateCell(row, col, value) {
@@ -92,11 +116,17 @@ const gameBoard = (() => {
     }
 
     function isBoardFull() {
-        return _board.every((row) => row.every((cell) => cell !== null));
+        if (_board.every((row) => row.every((cell) => cell !== null))) {
+            _result = {
+                winner: "tie",
+            };
+            return true;
+        }
+        return false;
     }
 
     function checkForWinner() {
-        return _checkRows() || _checkCols() || _checkDiags() || null;
+        return _checkRows() || _checkCols() || _checkDiags() || false;
     }
 
     function getBoard() {
@@ -112,12 +142,17 @@ const gameBoard = (() => {
         _logBoard();
     }
 
+    function getResult() {
+        return _result;
+    }
+
     return {
         updateCell,
         isBoardFull,
         checkForWinner,
         getBoard,
         resetBoard,
+        getResult,
     };
 })();
 
@@ -127,6 +162,8 @@ const game = (() => {
 
     let _roundsPlayed = 0;
     const MIN_ROUNDS_TO_WIN = 5;
+
+    let _running = true;
 
     function _createPlayer(name, marker) {
         function getName() {
@@ -158,28 +195,27 @@ const game = (() => {
             _roundsPlayed++;
         }
 
-        if (gameBoard.isBoardFull()) {
-            console.log("It's a tie");
-            return;
-        }
-
         if (_roundsPlayed >= MIN_ROUNDS_TO_WIN) {
-            const winner = gameBoard.checkForWinner();
-            if (winner !== null) {
-                console.log(`Winner: ${winner}`);
-                for (player of _players) {
-                    if (player.getMarker() === winner) {
-                        _activePlayer = _players.indexOf(player);
-                    }
-                }
-                return;
+            if (gameBoard.checkForWinner() || gameBoard.isBoardFull()) {
+                _running = false;
+                return gameBoard.getResult();
             }
         }
+    }
+
+    function getIsRunning() {
+        return _running;
+    }
+
+    function getActivePlayer() {
+        return _players[_activePlayer];
     }
 
     return {
         init,
         playRound,
+        getIsRunning,
+        getActivePlayer,
     };
 })();
 
@@ -190,6 +226,7 @@ const displayController = (() => {
     const _formDialog = document.querySelector(".form-dialog");
     const _mainContent = document.querySelector(".main > .content");
     const _buttonsContainer = document.querySelector(".buttons-container");
+    const _pageHeading = document.querySelector(".page-heading");
 
     _playBtn.addEventListener("click", _showFormDialog);
     _confirmBtn.addEventListener("click", _initGame);
@@ -208,13 +245,18 @@ const displayController = (() => {
 
         _playBtn.remove();
         _formDialog.close();
+
+        _pageHeading.textContent = `${game.getActivePlayer().getMarker()}'s turn`;
     }
 
     function _updateGridCell(event) {
+        if (!game.getIsRunning()) {
+            return;
+        }
         const target = event.target;
         const [row, col] = target.getAttribute("data-cell").split("/");
-        game.playRound(row, col);
-        _renderBoard();
+        const result = game.playRound(row, col);
+        _renderBoard(result);
     }
 
     function _resetGame() {
@@ -255,7 +297,19 @@ const displayController = (() => {
         _buttonsContainer.appendChild(resetBtn);
     }
 
-    function _renderBoard() {
+    function _renderBoard(result) {
+        if (result) {
+            console.log(result);
+
+            if (result.winner === "tie") {
+                _pageHeading.textContent = "It's a tie!";
+            } else {
+                _pageHeading.textContent = `${result.winner} wins!`;
+            }
+        } else {
+            _pageHeading.textContent = `${game.getActivePlayer().getMarker()}'s turn`;
+        }
+
         _gameBoard.forEach((row, rowIndex) => {
             row.forEach((cell, cellIndex) => {
                 if (cell !== null) {
