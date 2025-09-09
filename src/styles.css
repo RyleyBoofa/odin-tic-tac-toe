@@ -63,3 +63,7 @@ button {
     align-items: center;
     font-size: 100px;
 }
+
+.winning-cell {
+    background-color: green;
+}
