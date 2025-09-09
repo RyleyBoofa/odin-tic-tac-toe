@@ -7,7 +7,10 @@ const gameBoard = (() => {
         [null, null, null],
     ];
 
-    let _result = null;
+    const _result = {
+        winner: null,
+        cells: null,
+    };
 
     function _logBoard() {
         _board.forEach((row) => {
@@ -21,10 +24,8 @@ const gameBoard = (() => {
             if (value === null) {
                 return false;
             } else if (row.every((cell) => cell === value)) {
-                _result = {
-                    winner: value,
-                    cells: `row:${_board.indexOf(row)}`,
-                };
+                _result.winner = value;
+                _result.cells = `row:${_board.indexOf(row)}`;
                 return true;
             }
         }
@@ -44,10 +45,8 @@ const gameBoard = (() => {
                     }
                 }
                 if (match) {
-                    _result = {
-                        winner: value,
-                        cells: `col:${col}`,
-                    };
+                    _result.winner = value;
+                    _result.cells = `col:${col}`;
                     return true;
                 }
             }
@@ -68,10 +67,8 @@ const gameBoard = (() => {
                 }
             }
             if (match) {
-                _result = {
-                    winner: topLeft,
-                    cells: "diag:TL",
-                };
+                _result.winner = topLeft;
+                _result.cells = "diag:TL";
                 return true;
             }
         }
@@ -88,10 +85,8 @@ const gameBoard = (() => {
                 }
             }
             if (match) {
-                _result = {
-                    winner: bottomLeft,
-                    cells: "diag:BL",
-                };
+                _result.winner = bottomLeft;
+                _result.cells = "diag:BL";
                 return true;
             }
         }
