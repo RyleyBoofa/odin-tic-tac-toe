@@ -52,42 +52,42 @@ const gameBoard = (() => {
     }
 
     function _checkDiagTopLeft() {
-        const topLeft = _board[0][0];
-        if (topLeft === null) {
+        const value = _board[0][0];
+        if (value === null) {
             return false;
         }
 
         let match = true;
 
-        for (let i = 0; i <= 2; i++) {
-            if (_board[i][i] !== topLeft) {
+        for (let i = 1; i <= 2; i++) {
+            if (_board[i][i] !== value) {
                 match = false;
             }
         }
 
         if (match) {
-            _result.winner = topLeft;
+            _result.winner = value;
             _result.cells = ["0/0", "1/1", "2/2"];
             return true;
         }
     }
 
     function _checkDiagBottomLeft() {
-        const bottomLeft = _board[2][0];
-        if (bottomLeft === null) {
+        const value = _board[2][0];
+        if (value === null) {
             return false;
         }
 
         let match = true;
 
-        for (let i = 0; i <= 2; i++) {
-            if (_board[2 - i][0 + i] !== bottomLeft) {
+        for (let i = 1; i <= 2; i++) {
+            if (_board[2 - i][0 + i] !== value) {
                 match = false;
             }
         }
 
         if (match) {
-            _result.winner = bottomLeft;
+            _result.winner = value;
             _result.cells = ["2/0", "1/1", "0/2"];
             return true;
         }
@@ -119,7 +119,13 @@ const gameBoard = (() => {
         );
     }
 
-    function resetBoard() {
+    function reset() {
+        _resetBoard();
+        _result.winner = null;
+        _result.cells = null;
+    }
+
+    function _resetBoard() {
         _board.forEach((row) => {
             row.forEach((_, cellIndex) => {
                 row[cellIndex] = null;
@@ -141,7 +147,7 @@ const gameBoard = (() => {
         updateCell,
         isBoardFull,
         checkForWinner,
-        resetBoard,
+        reset,
         getBoard,
         getResult,
     };
@@ -185,11 +191,11 @@ const game = (() => {
     function reset(winner) {
         _running = true;
         _roundsPlayed = 0;
-        _players.forEach((player) => {
-            if (player.getMarker() === winner) {
-                _activePlayer = _players.indexOf(player);
-            }
-        });
+        if (winner) {
+            _activePlayer = _players.findIndex((player) => player.getMarker() === winner);
+        } else {
+            _activePlayer = 0;
+        }
     }
 
     //// GAMEPLAY ////
@@ -216,6 +222,10 @@ const game = (() => {
         return _players[_activePlayer];
     }
 
+    function getPlayer(marker) {
+        return _players.find((player) => player.getMarker() === marker);
+    }
+
     //// PUBLIC ////
     return {
         init,
@@ -223,28 +233,27 @@ const game = (() => {
         playRound,
         getIsRunning,
         getActivePlayer,
+        getPlayer,
     };
 })();
 
 const displayController = (() => {
     //// PARSE DOM ////
     const _gameBoard = gameBoard.getBoard();
-    const _playBtn = document.querySelector("#play-btn");
     const _confirmBtn = document.querySelector("#confirm-btn");
     const _formDialog = document.querySelector(".form-dialog");
+    const _playerForm = document.querySelector(".player-form");
     const _mainContent = document.querySelector(".main > .content");
     const _buttonsContainer = document.querySelector(".buttons-container");
     const _pageHeading = document.querySelector(".page-heading");
 
+    //// INIT GUI ////
+    _showFormDialog();
+
     //// BIND EVENTS ////
-    _playBtn.addEventListener("click", _showFormDialog);
     _confirmBtn.addEventListener("click", _initGame);
 
     //// EVENT HANDLERS ////
-    function _showFormDialog() {
-        _formDialog.showModal();
-    }
-
     function _initGame() {
         const p1 = document.querySelector("#p1-name").value;
         const p2 = document.querySelector("#p2-name").value;
@@ -253,10 +262,9 @@ const displayController = (() => {
         _buildGrid();
         _buildResetButton();
 
-        _playBtn.remove();
         _formDialog.close();
 
-        _pageHeading.textContent = `${game.getActivePlayer().getMarker()}'s turn`;
+        _renderHeading(`${game.getActivePlayer().getName()}'s turn`);
     }
 
     function _updateGridCell(event) {
@@ -273,24 +281,32 @@ const displayController = (() => {
 
     function _resetGame() {
         game.reset(gameBoard.getResult().winner);
-        gameBoard.resetBoard();
+        gameBoard.reset();
 
-        const grid = document.querySelector(".gameboard-container");
-        grid.remove();
+        _clearGrid();
 
         const newBtn = document.querySelector("#new-game-btn");
-        newBtn.remove();
+        if (newBtn) {
+            newBtn.remove();
+        }
 
-        _buildGrid();
+        _renderHeading(`${game.getActivePlayer().getName()}'s turn`);
     }
 
     function _newGame() {
-        // show form dialog
-        // reset everything
-        // init new game
+        game.reset();
+        gameBoard.reset();
+        _resetGUI();
+        _showFormDialog();
+        _renderHeading();
     }
 
-    //// BUILD GUI ////
+    //// GUI ////
+    function _showFormDialog() {
+        _formDialog.showModal();
+        _playerForm.reset();
+    }
+
     function _buildGrid() {
         const grid = document.createElement("div");
         grid.classList.add("gameboard-container");
@@ -309,6 +325,14 @@ const displayController = (() => {
                 div.setAttribute("data-cell", `${rowIndex}/${cellIndex}`);
                 grid.appendChild(div);
             });
+        });
+    }
+
+    function _clearGrid() {
+        const cells = document.querySelectorAll(".gameboard-cell");
+        cells.forEach((cell) => {
+            cell.textContent = "";
+            cell.classList.remove("winning-cell");
         });
     }
 
@@ -331,7 +355,15 @@ const displayController = (() => {
         newBtn.textContent = "NEW GAME";
         newBtn.addEventListener("click", _newGame);
 
-        _buttonsContainer.appendChild(newBtn);
+        _buttonsContainer.insertBefore(newBtn, _buttonsContainer.firstChild);
+    }
+
+    function _resetGUI() {
+        const grid = document.querySelector(".gameboard-container");
+        grid.remove();
+
+        const buttons = document.querySelectorAll(".buttons-container > button");
+        buttons.forEach((button) => button.remove());
     }
 
     //// RENDER GUI ////
@@ -342,19 +374,18 @@ const displayController = (() => {
             _buildNewGameButton();
 
             if (result.winner === "tie") {
-                _pageHeading.textContent = "It's a tie!";
+                _renderHeading("It's a tie!");
             } else {
-                _pageHeading.textContent = `${result.winner} wins!`;
+                _renderHeading(`${game.getPlayer(result.winner).getName()} wins!`);
                 result.cells.forEach((cell) => {
                     const [row, col] = cell.split("/");
                     const target = document.querySelector(`[data-cell="${row}/${col}"]`);
                     target.classList.add("winning-cell");
                 });
             }
-            return;
+        } else {
+            _renderHeading(`${game.getActivePlayer().getName()}'s turn`);
         }
-
-        _pageHeading.textContent = `${game.getActivePlayer().getMarker()}'s turn`;
     }
 
     function _renderGameBoard() {
@@ -366,5 +397,13 @@ const displayController = (() => {
                 }
             });
         });
+    }
+
+    function _renderHeading(text) {
+        if (text) {
+            _pageHeading.textContent = text;
+        } else {
+            _pageHeading.textContent = "Odin Tic Tac Toe";
+        }
     }
 })();

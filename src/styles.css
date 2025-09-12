@@ -1,3 +1,5 @@
+/* GLOBAL */
+
 *,
 *::before,
 *::after {
@@ -15,8 +17,11 @@ body {
     min-height: 100vh;
 }
 
-button {
+button,
+input {
     font: inherit;
+    border: 1px solid black;
+    border-radius: 0.25em;
     padding: 0.25em 1em;
 }
 
@@ -35,13 +40,49 @@ button {
     max-width: 75ch;
 }
 
-.main {
+/* DIALOG */
+
+.form-dialog {
+    border-radius: 0.5em;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: clamp(300px, 50vw, 1000px);
+    padding: 1em;
+}
+
+.player-form {
+    font-size: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    gap: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+.dialog-buttons {
+    display: flex;
+    gap: 1em;
+    width: 100%;
+}
+
+.dialog-buttons > button {
     flex: 1;
 }
 
-.button {
-    font-size: 50px;
-    border-radius: 0.25em;
+/* MAIN */
+
+.main {
+    flex: 1;
+    font-size: 1.5rem;
+}
+
+.buttons-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    margin-bottom: 1em;
 }
 
 .gameboard-container {
