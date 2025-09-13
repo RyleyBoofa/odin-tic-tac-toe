@@ -164,6 +164,16 @@ const game = (() => {
     let _activePlayer = 0;
 
     function _createPlayer(name, marker) {
+        let _score = 0;
+
+        function addScore() {
+            _score++;
+        }
+
+        function getScore() {
+            return _score;
+        }
+
         function getName() {
             return name;
         }
@@ -177,6 +187,8 @@ const game = (() => {
         }
 
         return {
+            addScore,
+            getScore,
             getName,
             getMarker,
             takeTurn,
@@ -207,8 +219,12 @@ const game = (() => {
 
         if (_roundsPlayed >= MIN_ROUNDS_TO_WIN) {
             if (gameBoard.checkForWinner() || gameBoard.isBoardFull()) {
+                const result = gameBoard.getResult();
+                if (result.winner !== "tie") {
+                    getPlayer(result.winner).addScore();
+                }
                 _running = false;
-                return gameBoard.getResult();
+                return result;
             }
         }
     }
@@ -226,6 +242,17 @@ const game = (() => {
         return _players.find((player) => player.getMarker() === marker);
     }
 
+    function getScores() {
+        const p1Score = _players[0].getScore();
+        const p2Score = _players[1].getScore();
+        if (p1Score === p2Score) {
+            return `It's all tied up! ${p1Score}-${p2Score}`;
+        } else {
+            const sorted = _players.toSorted((a, b) => p1Score - p2Score);
+            return `${sorted[0].getName()} is winning! ${sorted[0].getScore()}-${sorted[1].getScore()}`;
+        }
+    }
+
     //// PUBLIC ////
     return {
         init,
@@ -234,6 +261,7 @@ const game = (() => {
         getIsRunning,
         getActivePlayer,
         getPlayer,
+        getScores,
     };
 })();
 
@@ -371,12 +399,10 @@ const displayController = (() => {
         _renderGameBoard();
 
         if (result) {
+            _renderHeading(game.getScores());
             _buildNewGameButton();
 
-            if (result.winner === "tie") {
-                _renderHeading("It's a tie!");
-            } else {
-                _renderHeading(`${game.getPlayer(result.winner).getName()} wins!`);
+            if (result.winner !== "tie") {
                 result.cells.forEach((cell) => {
                     const [row, col] = cell.split("/");
                     const target = document.querySelector(`[data-cell="${row}/${col}"]`);
