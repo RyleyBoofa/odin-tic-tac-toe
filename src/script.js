@@ -205,7 +205,9 @@ const game = (() => {
         _running = true;
         _roundsPlayed = 0;
         if (winner) {
-            _activePlayer = _players.findIndex((player) => player.getMarker() === winner);
+            if (winner !== "tie") {
+                _activePlayer = _players.findIndex((player) => player.getMarker() === winner);
+            }
         } else {
             _activePlayer = 0;
         }
