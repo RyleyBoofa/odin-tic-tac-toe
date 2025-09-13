@@ -10,7 +10,7 @@
     <body>
         <header class="header container">
             <div class="content">
-                <h1 class="page-heading">Odin Tic Tac Toe</h1>
+                <h1 class="page-heading" aria-live="polite">Odin Tic Tac Toe</h1>
             </div>
         </header>
         <dialog class="form-dialog">
@@ -26,8 +26,8 @@
                     <input type="text" name="p2-name" id="p2-name" maxlength="20" required />
                 </form>
                 <div class="dialog-buttons">
-                    <button value="cancel" formmethod="dialog">Cancel</button>
-                    <button id="confirm-btn" value="confirm">Confirm</button>
+                    <button class="clickable" value="cancel" formmethod="dialog">Cancel</button>
+                    <button class="clickable" id="confirm-btn" value="confirm">Confirm</button>
                 </div>
             </div>
         </dialog>

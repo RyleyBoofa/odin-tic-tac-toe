@@ -120,9 +120,9 @@ const gameBoard = (() => {
     }
 
     function reset() {
-        _resetBoard();
         _result.winner = null;
         _result.cells = null;
+        _resetBoard();
     }
 
     function _resetBoard() {
@@ -155,13 +155,13 @@ const gameBoard = (() => {
 
 const game = (() => {
     //// GAME STATE ////
-    let _running = true;
-    let _roundsPlayed = 0;
+    let _running;
+    let _roundsPlayed;
     const MIN_ROUNDS_TO_WIN = 5;
 
     //// PLAYERS ////
     let _players;
-    let _activePlayer = 0;
+    let _activePlayer;
 
     function _createPlayer(name, marker) {
         let _score = 0;
@@ -198,6 +198,7 @@ const game = (() => {
     //// SETUP ////
     function init(p1, p2) {
         _players = [_createPlayer(p1, "X"), _createPlayer(p2, "O")];
+        reset();
     }
 
     function reset(winner) {
@@ -248,7 +249,7 @@ const game = (() => {
         if (p1Score === p2Score) {
             return `It's all tied up! ${p1Score}-${p2Score}`;
         } else {
-            const sorted = _players.toSorted((a, b) => p1Score - p2Score);
+            const sorted = _players.toSorted((a, b) => b.getScore() - a.getScore());
             return `${sorted[0].getName()} is winning ${sorted[0].getScore()}-${sorted[1].getScore()}`;
         }
     }
@@ -267,10 +268,11 @@ const game = (() => {
 
 const displayController = (() => {
     //// PARSE DOM ////
-    const _gameBoard = gameBoard.getBoard();
     const _confirmBtn = document.querySelector("#confirm-btn");
     const _formDialog = document.querySelector(".form-dialog");
-    const _playerForm = document.querySelector(".player-form");
+    const _playerForms = document.querySelectorAll(".player-form");
+    const _p1Input = document.querySelector("#p1-name");
+    const _p2Input = document.querySelector("#p2-name");
     const _gridContainer = document.querySelector(".grid-container");
     const _buttonsContainer = document.querySelector(".buttons-container");
     const _pageHeading = document.querySelector(".page-heading");
@@ -283,8 +285,8 @@ const displayController = (() => {
 
     //// EVENT HANDLERS ////
     function _initGame() {
-        const p1 = document.querySelector("#p1-name").value.trim();
-        const p2 = document.querySelector("#p2-name").value.trim();
+        const p1 = _p1Input.value.trim();
+        const p2 = _p2Input.value.trim();
 
         if (p1 === "" || p2 === "") {
             alert("Please fill in player names");
@@ -294,7 +296,7 @@ const displayController = (() => {
         game.init(p1, p2);
 
         _buildGrid();
-        _buildResetButton();
+        _buildButton("reset-btn", "RESET", _resetGame);
 
         _formDialog.close();
 
@@ -339,7 +341,9 @@ const displayController = (() => {
     //// GUI ////
     function _showFormDialog() {
         _formDialog.showModal();
-        _playerForm.reset();
+        _playerForms.forEach((form) => {
+            form.reset();
+        });
     }
 
     function _buildGrid() {
@@ -353,7 +357,7 @@ const displayController = (() => {
     }
 
     function _buildGridCells(grid) {
-        _gameBoard.forEach((row, rowIndex) => {
+        gameBoard.getBoard().forEach((row, rowIndex) => {
             row.forEach((_, cellIndex) => {
                 const div = document.createElement("div");
                 div.classList.add("gameboard-cell");
@@ -373,26 +377,17 @@ const displayController = (() => {
         });
     }
 
-    function _buildResetButton() {
-        const resetBtn = document.createElement("button");
-        resetBtn.setAttribute("type", "button");
-        resetBtn.classList.add("button");
-        resetBtn.id = "reset-btn";
-        resetBtn.textContent = "RESET";
-        resetBtn.addEventListener("click", _resetGame);
+    function _buildButton(id, text, handler) {
+        const button = document.createElement("button");
+        button.setAttribute("type", "button");
+        button.classList.add("button");
+        button.classList.add("clickable");
 
-        _buttonsContainer.appendChild(resetBtn);
-    }
+        button.id = id;
+        button.textContent = text;
+        button.addEventListener("click", handler);
 
-    function _buildNewGameButton() {
-        const newBtn = document.createElement("button");
-        newBtn.setAttribute("type", "button");
-        newBtn.classList.add("button");
-        newBtn.id = "new-game-btn";
-        newBtn.textContent = "NEW GAME";
-        newBtn.addEventListener("click", _newGame);
-
-        _buttonsContainer.appendChild(newBtn);
+        _buttonsContainer.appendChild(button);
     }
 
     function _resetGUI() {
@@ -409,7 +404,7 @@ const displayController = (() => {
 
         if (result) {
             _renderHeading(game.getScores());
-            _buildNewGameButton();
+            _buildButton("new-game-btn", "NEW GAME", _newGame);
 
             if (result.winner !== "tie") {
                 result.cells.forEach((cell) => {
@@ -424,7 +419,7 @@ const displayController = (() => {
     }
 
     function _renderGameBoard() {
-        _gameBoard.forEach((row, rowIndex) => {
+        gameBoard.getBoard().forEach((row, rowIndex) => {
             row.forEach((cell, cellIndex) => {
                 if (cell !== null) {
                     const target = document.querySelector(`[data-cell="${rowIndex}/${cellIndex}"]`);

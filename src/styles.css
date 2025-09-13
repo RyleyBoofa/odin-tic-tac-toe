@@ -14,12 +14,19 @@
     --fs-large: clamp(1.2rem, 1rem + 1vw, 1.6rem);
     --fs-xl: clamp(2rem, 1rem + 2vw, 3rem);
     --fs-jumbo: clamp(5rem, 1rem + 10vw, 10rem);
+    --color-red: #d88c9a;
+    --color-yellow: #f2d0a9;
+    --color-white: #f1e3d3;
+    --color-green: #99c1b9;
+    --color-grey: #4a4a4a;
+    --color-shadow: #0003;
 }
 
 body {
     font-family: Arial, Helvetica, sans-serif;
     font-size: 20px;
-    background-color: #ccc;
+    color: var(--color-grey);
+    background-color: var(--color-yellow);
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -28,20 +35,21 @@ body {
 button,
 input {
     font: inherit;
-    border: 1px solid black;
+    border: 2px solid var(--color-shadow);
+    color: var(--color-grey);
     border-radius: 0.25em;
     padding: 0.25em 1em;
 }
 
 input:invalid {
-    border: 2px solid red;
+    border: 2px solid var(--color-red);
 }
 
 .container {
     display: flex;
     justify-content: center;
     width: 100%;
-    padding: 1em;
+    padding: 0.5em;
 }
 
 .content {
@@ -56,14 +64,32 @@ input:invalid {
 
 .page-heading {
     font-size: var(--fs-xl);
-    margin-top: 1em;
     text-align: center;
+}
+
+.button {
+    background-color: var(--color-white);
+    border: none;
+    box-shadow: 0px 0px 2px 5px var(--color-shadow);
+}
+
+.clickable {
+    transform: scale(1);
+    transition: 0.1s ease;
+}
+
+.clickable:hover,
+.clickable:focus,
+.clickable:active {
+    transform: scale(1.05);
 }
 
 /* DIALOG */
 
 .form-dialog {
     font-size: var(--fs-large);
+    background-color: var(--color-white);
+    color: var(--color-grey);
     border-radius: 0.5em;
     position: fixed;
     top: 50%;
@@ -128,9 +154,9 @@ input:invalid {
 
 .gameboard-cell {
     font-size: var(--fs-jumbo);
-    background-color: #666;
+    background-color: var(--color-white);
     border-radius: 0.25em;
-    box-shadow: 0px 0px 2px 5px #0003;
+    box-shadow: 0px 0px 2px 5px var(--color-shadow);
     width: 100%;
     height: 100%;
     display: flex;
@@ -138,18 +164,6 @@ input:invalid {
     align-items: center;
 }
 
-.clickable {
-    transform: scale(1);
-    transition: 0.1s ease;
-}
-
-.clickable:hover,
-.clickable:focus,
-.clickable:active {
-    box-shadow: inset 0px 0px 10px silver;
-    transform: scale(1.025);
-}
-
 .winning-cell {
-    background-color: green;
+    background-color: var(--color-green);
 }
