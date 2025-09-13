@@ -14,22 +14,27 @@
             </div>
         </header>
         <dialog class="form-dialog">
-            <form action="" class="player-form">
-                <h2 class="form-heading">Player 1</h2>
-                <label for="p1-name">Name:</label>
-                <input type="text" name="p1-name" id="p1-name" />
-                <h2 class="form-heading">Player 2</h2>
-                <label for="p2-name">Name:</label>
-                <input type="text" name="p2-name" id="p2-name" />
-            </form>
-            <div class="dialog-buttons">
-                <button value="cancel" formmethod="dialog">Cancel</button>
-                <button id="confirm-btn" value="confirm">Confirm</button>
+            <div class="form container">
+                <form action="" class="player-form">
+                    <h2 class="form-heading">Player 1</h2>
+                    <label for="p1-name">Name:</label>
+                    <input type="text" name="p1-name" id="p1-name" maxlength="20" required />
+                </form>
+                <form action="" class="player-form">
+                    <h2 class="form-heading">Player 2</h2>
+                    <label for="p2-name">Name:</label>
+                    <input type="text" name="p2-name" id="p2-name" maxlength="20" required />
+                </form>
+                <div class="dialog-buttons">
+                    <button value="cancel" formmethod="dialog">Cancel</button>
+                    <button id="confirm-btn" value="confirm">Confirm</button>
+                </div>
             </div>
         </dialog>
         <section class="main container">
             <div class="content">
                 <div class="buttons-container"></div>
+                <div class="grid-container"></div>
             </div>
         </section>
     </body>

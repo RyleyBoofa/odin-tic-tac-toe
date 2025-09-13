@@ -8,6 +8,14 @@
     padding: 0;
 }
 
+:root {
+    --fs-small: clamp(0.8rem, 0.7rem + 1vw, 1.2rem);
+    --fs-medium: clamp(1rem, 0.9rem + 1vw, 1.4rem);
+    --fs-large: clamp(1.2rem, 1rem + 1vw, 1.6rem);
+    --fs-xl: clamp(2rem, 1rem + 2vw, 3rem);
+    --fs-jumbo: clamp(5rem, 1rem + 10vw, 10rem);
+}
+
 body {
     font-family: Arial, Helvetica, sans-serif;
     font-size: 20px;
@@ -25,35 +33,55 @@ input {
     padding: 0.25em 1em;
 }
 
+input:invalid {
+    border: 2px solid red;
+}
+
 .container {
     display: flex;
     justify-content: center;
+    width: 100%;
     padding: 1em;
 }
 
 .content {
+    font-size: var(--fs-medium);
     flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    max-width: 75ch;
+    width: min(75ch, 100%);
+}
+
+.page-heading {
+    font-size: var(--fs-xl);
+    margin-top: 1em;
+    text-align: center;
 }
 
 /* DIALOG */
 
 .form-dialog {
+    font-size: var(--fs-large);
     border-radius: 0.5em;
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: clamp(300px, 50vw, 1000px);
+    height: clamp(500px, 50vh, 1000px);
+    aspect-ratio: 1 / 1;
     padding: 1em;
 }
 
+.form {
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%;
+    height: 100%;
+}
+
 .player-form {
-    font-size: 1.5rem;
     display: flex;
     flex-direction: column;
     justify-content: space-around;
@@ -75,34 +103,51 @@ input {
 
 .main {
     flex: 1;
-    font-size: 1.5rem;
+    font-size: var(--fs-large);
 }
 
 .buttons-container {
     display: flex;
-    flex-direction: column;
     gap: 1em;
     margin-bottom: 1em;
 }
 
+.grid-container {
+    flex: 1;
+    width: clamp(300px, 100%, 800px);
+}
+
 .gameboard-container {
+    aspect-ratio: 1 / 1;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(3, 1fr);
-    width: 600px;
-    height: 600px;
-    border: 1px solid black;
+    gap: 1em;
     margin: 0 auto;
 }
 
 .gameboard-cell {
-    border: 1px solid black;
+    font-size: var(--fs-jumbo);
+    background-color: #666;
+    border-radius: 0.25em;
+    box-shadow: 0px 0px 2px 5px #0003;
     width: 100%;
     height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 100px;
+}
+
+.clickable {
+    transform: scale(1);
+    transition: 0.1s ease;
+}
+
+.clickable:hover,
+.clickable:focus,
+.clickable:active {
+    box-shadow: inset 0px 0px 10px silver;
+    transform: scale(1.025);
 }
 
 .winning-cell {

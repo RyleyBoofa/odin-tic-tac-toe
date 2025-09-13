@@ -249,7 +249,7 @@ const game = (() => {
             return `It's all tied up! ${p1Score}-${p2Score}`;
         } else {
             const sorted = _players.toSorted((a, b) => p1Score - p2Score);
-            return `${sorted[0].getName()} is winning! ${sorted[0].getScore()}-${sorted[1].getScore()}`;
+            return `${sorted[0].getName()} is winning ${sorted[0].getScore()}-${sorted[1].getScore()}`;
         }
     }
 
@@ -271,7 +271,7 @@ const displayController = (() => {
     const _confirmBtn = document.querySelector("#confirm-btn");
     const _formDialog = document.querySelector(".form-dialog");
     const _playerForm = document.querySelector(".player-form");
-    const _mainContent = document.querySelector(".main > .content");
+    const _gridContainer = document.querySelector(".grid-container");
     const _buttonsContainer = document.querySelector(".buttons-container");
     const _pageHeading = document.querySelector(".page-heading");
 
@@ -283,8 +283,14 @@ const displayController = (() => {
 
     //// EVENT HANDLERS ////
     function _initGame() {
-        const p1 = document.querySelector("#p1-name").value;
-        const p2 = document.querySelector("#p2-name").value;
+        const p1 = document.querySelector("#p1-name").value.trim();
+        const p2 = document.querySelector("#p2-name").value.trim();
+
+        if (p1 === "" || p2 === "") {
+            alert("Please fill in player names");
+            return;
+        }
+
         game.init(p1, p2);
 
         _buildGrid();
@@ -303,6 +309,7 @@ const displayController = (() => {
         const target = event.target;
         const [row, col] = target.getAttribute("data-cell").split("/");
         const result = game.playRound(row, col);
+        target.classList.remove("clickable");
 
         _render(result);
     }
@@ -340,7 +347,7 @@ const displayController = (() => {
         grid.classList.add("gameboard-container");
         grid.addEventListener("click", _updateGridCell);
 
-        _mainContent.appendChild(grid);
+        _gridContainer.appendChild(grid);
 
         _buildGridCells(grid);
     }
@@ -350,6 +357,7 @@ const displayController = (() => {
             row.forEach((_, cellIndex) => {
                 const div = document.createElement("div");
                 div.classList.add("gameboard-cell");
+                div.classList.add("clickable");
                 div.setAttribute("data-cell", `${rowIndex}/${cellIndex}`);
                 grid.appendChild(div);
             });
@@ -361,6 +369,7 @@ const displayController = (() => {
         cells.forEach((cell) => {
             cell.textContent = "";
             cell.classList.remove("winning-cell");
+            cell.classList.add("clickable");
         });
     }
 
@@ -383,7 +392,7 @@ const displayController = (() => {
         newBtn.textContent = "NEW GAME";
         newBtn.addEventListener("click", _newGame);
 
-        _buttonsContainer.insertBefore(newBtn, _buttonsContainer.firstChild);
+        _buttonsContainer.appendChild(newBtn);
     }
 
     function _resetGUI() {
