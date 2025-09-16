@@ -57,19 +57,15 @@ const gameBoard = (() => {
             return false;
         }
 
-        let match = true;
-
         for (let i = 1; i <= 2; i++) {
             if (_board[i][i] !== value) {
-                match = false;
+                return false;
             }
         }
 
-        if (match) {
-            _result.winner = value;
-            _result.cells = ["0/0", "1/1", "2/2"];
-            return true;
-        }
+        _result.winner = value;
+        _result.cells = ["0/0", "1/1", "2/2"];
+        return true;
     }
 
     function _checkDiagBottomLeft() {
@@ -78,19 +74,15 @@ const gameBoard = (() => {
             return false;
         }
 
-        let match = true;
-
         for (let i = 1; i <= 2; i++) {
             if (_board[2 - i][0 + i] !== value) {
-                match = false;
+                return false;
             }
         }
 
-        if (match) {
-            _result.winner = value;
-            _result.cells = ["2/0", "1/1", "0/2"];
-            return true;
-        }
+        _result.winner = value;
+        _result.cells = ["2/0", "1/1", "0/2"];
+        return true;
     }
 
     //// BOARD INTERACTION ////
@@ -198,16 +190,13 @@ const game = (() => {
     //// SETUP ////
     function init(p1, p2) {
         _players = [_createPlayer(p1, "X"), _createPlayer(p2, "O")];
-        reset();
     }
 
     function reset(winner) {
         _running = true;
         _roundsPlayed = 0;
-        if (winner) {
-            if (winner !== "tie") {
-                _activePlayer = _players.findIndex((player) => player.getMarker() === winner);
-            }
+        if (winner && winner !== "tie") {
+            _activePlayer = _players.findIndex((player) => player.getMarker() === winner);
         } else {
             _activePlayer = 0;
         }
@@ -270,14 +259,14 @@ const game = (() => {
 
 const displayController = (() => {
     //// PARSE DOM ////
-    const _confirmBtn = document.querySelector("#confirm-btn");
+    const _pageHeading = document.querySelector(".page-heading");
+    const _buttonsContainer = document.querySelector(".buttons-container");
+    const _gridContainer = document.querySelector(".grid-container");
     const _formDialog = document.querySelector(".form-dialog");
     const _playerForms = document.querySelectorAll(".player-form");
     const _p1Input = document.querySelector("#p1-name");
     const _p2Input = document.querySelector("#p2-name");
-    const _gridContainer = document.querySelector(".grid-container");
-    const _buttonsContainer = document.querySelector(".buttons-container");
-    const _pageHeading = document.querySelector(".page-heading");
+    const _confirmBtn = document.querySelector("#confirm-btn");
 
     //// INIT GUI ////
     _showFormDialog();
@@ -296,13 +285,15 @@ const displayController = (() => {
         }
 
         game.init(p1, p2);
+        game.reset();
+        gameBoard.reset();
 
         _buildGrid();
         _buildButton("reset-btn", "RESET", _resetGame);
 
         _formDialog.close();
 
-        _renderHeading(`${game.getActivePlayer().getName()}'s turn`);
+        _render();
     }
 
     function _updateGridCell(event) {
@@ -329,15 +320,12 @@ const displayController = (() => {
             newBtn.remove();
         }
 
-        _renderHeading(`${game.getActivePlayer().getName()}'s turn`);
+        _render();
     }
 
     function _newGame() {
-        game.reset();
-        gameBoard.reset();
         _resetGUI();
         _showFormDialog();
-        _renderHeading();
     }
 
     //// GUI ////
@@ -398,6 +386,8 @@ const displayController = (() => {
 
         const buttons = document.querySelectorAll(".buttons-container > button");
         buttons.forEach((button) => button.remove());
+
+        _renderHeading();
     }
 
     //// RENDER GUI ////
